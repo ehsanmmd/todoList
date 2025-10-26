@@ -67,7 +67,7 @@ export const Board = () => {
     const { active, over } = event;
     setActiveCard(null);
 
-    if (!over || !sourceColumn) return;
+    if (!over || !sourceColumn || over.id === sourceColumn) return;
 
     const activeId = active.id.toString();
     const targetColumnId = over.id.toString();
@@ -87,8 +87,28 @@ export const Board = () => {
   }
 
   const onStartDrag = (columnId: string) => {
-    console.log("columnId", columnId);
     setSourceColumn(columnId);
+  };
+
+  const handleCardDelete = (id: string) => {
+    setCards((prev) => {
+      const newCards = { ...prev };
+      delete newCards[id];
+      return newCards;
+    });
+
+    setColumns((prev) => {
+      const newColumns = { ...prev };
+      Object.keys(newColumns).forEach((columnKey) => {
+        newColumns[columnKey] = {
+          ...newColumns[columnKey],
+          cardIds: newColumns[columnKey].cardIds.filter(
+            (cardId) => cardId !== id
+          ),
+        };
+      });
+      return newColumns;
+    });
   };
 
   return (
@@ -102,6 +122,7 @@ export const Board = () => {
             cardIds={column.cardIds}
             cards={cards}
             onStartDrag={onStartDrag}
+            onDelete={handleCardDelete}
           />
         ))}
 

@@ -2,6 +2,7 @@ import { useDroppable } from "@dnd-kit/core";
 import type { PropsWithChildren } from "react";
 import { Card } from "./Card";
 import { List, type RowComponentProps } from "react-window";
+import { useEffect } from "react";
 
 export interface Column extends PropsWithChildren {
   id: string;
@@ -9,18 +10,28 @@ export interface Column extends PropsWithChildren {
   cardIds: string[];
   cards: Record<string, Card>;
   onStartDrag: (id: string) => void;
+  onDelete: (cardId: string) => void;
 }
 
-export const Column = ({ title, id, cardIds, cards, onStartDrag }: Column) => {
+export const Column = ({
+  title,
+  id,
+  cardIds,
+  cards,
+  onStartDrag,
+  onDelete,
+}: Column) => {
   const { isOver, setNodeRef, active } = useDroppable({ id });
 
   const isInitialPosition = !!active && cardIds.includes(active.id.toString());
   const isOverNewColumn = isOver && !isInitialPosition;
   const isOverSourceColumn = isOver && isInitialPosition;
 
-  if (isOverSourceColumn) {
-    onStartDrag(id);
-  }
+  useEffect(() => {
+    if (isOverSourceColumn) {
+      onStartDrag(id);
+    }
+  }, [isOverSourceColumn]);
 
   return (
     <div>
@@ -37,7 +48,7 @@ export const Column = ({ title, id, cardIds, cards, onStartDrag }: Column) => {
           rowHeight={50}
           rowCount={cardIds.length}
           rowComponent={RowComponent}
-          rowProps={{ cards, cardIds }}
+          rowProps={{ cards, cardIds, onDelete }}
         />
       </div>
     </div>
@@ -48,7 +59,18 @@ function RowComponent({
   index,
   cards,
   cardIds,
-}: RowComponentProps<{ cards: Record<string, Card>; cardIds: string[] }>) {
+  onDelete,
+}: RowComponentProps<{
+  cards: Record<string, Card>;
+  cardIds: string[];
+  onDelete: (cardId: string) => void;
+}>) {
   const filtered = cardIds.map((id) => cards[id]);
-  return <Card id={cardIds[index]} title={filtered[index].title} />;
+  return (
+    <Card
+      id={cardIds[index]}
+      title={filtered[index].title}
+      onDelete={onDelete}
+    />
+  );
 }
