@@ -39,7 +39,7 @@ export const Column = ({
         {title}
       </div>
       <div
-        className={`w-50 border border-dashed border-amber-600 rounded-xl py-1 h-[calc(100vh-100px)]  ${
+        className={`w-50 border border-dashed border-amber-600 rounded-xl py-1 h-[calc(100vh-200px)]  ${
           isOverNewColumn ? "bg-green-100" : undefined
         }`}
         ref={setNodeRef}

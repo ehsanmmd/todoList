@@ -58,6 +58,7 @@ export const Board = () => {
   const [columns, setColumns] = useState(initialColumns);
   const [cards, setCards] = useState(initialCards);
   const [sourceColumn, setSourceColumn] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
 
   const sensors = useSensors(
     useSensor(MouseSensor, {
@@ -129,31 +130,70 @@ export const Board = () => {
     });
   };
 
-  return (
-    <div className="flex gap-2">
-      <DndContext
-        sensors={sensors}
-        onDragStart={handleDragStart}
-        onDragEnd={handleDragEnd}
-      >
-        {Object.values(columns).map((column) => (
-          <Column
-            key={column.id}
-            title={column.title}
-            id={column.id}
-            cardIds={column.cardIds}
-            cards={cards}
-            onStartDrag={onStartDrag}
-            onDelete={handleCardDelete}
-          />
-        ))}
+  const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(event.target.value);
+  };
 
-        <DragOverlay>
-          {activeCard ? (
-            <Card id={activeCard.id} title={activeCard.title} />
-          ) : null}
-        </DragOverlay>
-      </DndContext>
+  const filteredCards =
+    searchTerm.length > 0
+      ? Object.fromEntries(
+          Object.entries(cards).filter(([id, card]) =>
+            card.title.toLowerCase().includes(searchTerm.toLowerCase())
+          )
+        )
+      : cards;
+
+  const filteredColumns =
+    searchTerm.length > 0
+      ? Object.fromEntries(
+          Object.entries(columns).map(([key, column]) => [
+            key,
+            {
+              ...column,
+              cardIds: column.cardIds.filter(
+                (cardId) => cardId in filteredCards
+              ),
+            },
+          ])
+        )
+      : columns;
+
+  return (
+    <div className="h-screen w-screen flex flex-col items-center gap-4 p-4">
+      <div>
+        <input
+          type="text"
+          placeholder="Search..."
+          className="border border-gray-300 rounded-md p-2"
+          value={searchTerm}
+          onChange={handleSearch}
+        />
+      </div>
+      <div className="flex gap-2">
+        <DndContext
+          sensors={sensors}
+          onDragStart={handleDragStart}
+          onDragEnd={handleDragEnd}
+        >
+          {Object.values(filteredColumns).map((column) => (
+            <Column
+              key={column.id}
+              title={column.title}
+              id={column.id}
+              cardIds={column.cardIds}
+              cards={filteredCards}
+              onStartDrag={onStartDrag}
+              onDelete={handleCardDelete}
+            />
+          ))}
+
+          <DragOverlay>
+            {activeCard ? (
+              <Card id={activeCard.id} title={activeCard.title} />
+            ) : null}
+          </DragOverlay>
+        </DndContext>
+      </div>
     </div>
   );
 };
