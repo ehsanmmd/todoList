@@ -75,8 +75,10 @@ export const Board = () => {
   const filteredCards =
     searchTerm.length > 0
       ? Object.fromEntries(
-          Object.entries(cards).filter(([id, card]) =>
-            card.title.toLowerCase().includes(searchTerm.toLowerCase())
+          Object.entries(cards).filter(
+            ([id, card]) =>
+              card.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+              card.description?.toLowerCase().includes(searchTerm.toLowerCase())
           )
         )
       : cards;
