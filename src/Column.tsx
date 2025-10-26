@@ -11,6 +11,7 @@ export interface Column extends PropsWithChildren {
   cards: Record<string, Card>;
   onStartDrag: (id: string) => void;
   onDelete: (cardId: string) => void;
+  onUpdate: (cardId: string, description: string) => void;
 }
 
 export const Column = ({
@@ -20,6 +21,7 @@ export const Column = ({
   cards,
   onStartDrag,
   onDelete,
+  onUpdate,
 }: Column) => {
   const { isOver, setNodeRef, active } = useDroppable({ id });
 
@@ -52,6 +54,7 @@ export const Column = ({
               title={cards[cardIds[index]].title}
               description={cards[cardIds[index]].description}
               onDelete={onDelete}
+              onUpdate={onUpdate}
             />
           )}
         />

@@ -160,6 +160,14 @@ export const Board = () => {
         )
       : columns;
 
+  const handleCardUpdate = (cardId: string, description: string) => {
+    setCards((prev) => {
+      const newCards = { ...prev };
+      newCards[cardId].description = description;
+      return newCards;
+    });
+  };
+
   return (
     <div className="h-screen w-screen flex flex-col items-center gap-4 p-4">
       <div>
@@ -186,12 +194,13 @@ export const Board = () => {
               cards={filteredCards}
               onStartDrag={onStartDrag}
               onDelete={handleCardDelete}
+              onUpdate={handleCardUpdate}
             />
           ))}
 
           <DragOverlay>
             {activeCard ? (
-              <Card id={activeCard.id} title={activeCard.title} />
+              <Card id={activeCard.id} title={activeCard.title} description={activeCard.description} />
             ) : null}
           </DragOverlay>
         </DndContext>
