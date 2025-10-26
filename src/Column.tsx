@@ -50,6 +50,7 @@ export const Column = ({
             <Card
               id={cardIds[index]}
               title={cards[cardIds[index]].title}
+              description={cards[cardIds[index]].description}
               onDelete={onDelete}
             />
           )}

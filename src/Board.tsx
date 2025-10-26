@@ -11,6 +11,7 @@ import {
 import { Card } from "./Card";
 import { Column } from "./Column";
 import { useState } from "react";
+import { faker } from "@faker-js/faker";
 
 function generateInitialState(cardCount: number) {
   const cards: Record<string, Card> = {};
@@ -18,7 +19,8 @@ function generateInitialState(cardCount: number) {
 
   for (let i = 1; i <= cardCount; i++) {
     const id = `card-${i}`;
-    cards[id] = { id, title: `Task ${i}` };
+    const description = faker.lorem.words(5);
+    cards[id] = { id, title: `Task ${i}`, description };
     todoCardIds.push(id);
   }
 

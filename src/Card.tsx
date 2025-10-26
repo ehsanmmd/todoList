@@ -4,10 +4,11 @@ import { AiOutlineDelete } from "react-icons/ai";
 export interface Card {
   id: string;
   title: string;
+  description?: string;
   onDelete?: (id: string) => void;
 }
 
-export const Card = ({ title, id, onDelete }: Card) => {
+export const Card = ({ title, id, description, onDelete }: Card) => {
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
     id,
     data: { id, title },
@@ -30,7 +31,7 @@ export const Card = ({ title, id, onDelete }: Card) => {
           <AiOutlineDelete />
         </button>
       </div>
-      <div className="w-full flex-1" {...attributes} {...listeners}></div>
+      <div className="w-full flex-1 text-sm text-gray-700" {...attributes} {...listeners}>{description}</div>
     </div>
   );
 };
