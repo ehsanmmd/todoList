@@ -1,6 +1,10 @@
 import {
   DndContext,
   DragOverlay,
+  MouseSensor,
+  TouchSensor,
+  useSensor,
+  useSensors,
   type DragEndEvent,
   type DragStartEvent,
 } from "@dnd-kit/core";
@@ -54,6 +58,20 @@ export const Board = () => {
   const [columns, setColumns] = useState(initialColumns);
   const [cards, setCards] = useState(initialCards);
   const [sourceColumn, setSourceColumn] = useState<string | null>(null);
+
+  const sensors = useSensors(
+    useSensor(MouseSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    }),
+    useSensor(TouchSensor, {
+      activationConstraint: {
+        delay: 200,
+        tolerance: 6,
+      },
+    })
+  );
 
   function handleDragStart(event: DragStartEvent) {
     console.log(event);
@@ -113,7 +131,11 @@ export const Board = () => {
 
   return (
     <div className="flex gap-2">
-      <DndContext onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
+      <DndContext
+        sensors={sensors}
+        onDragStart={handleDragStart}
+        onDragEnd={handleDragEnd}
+      >
         {Object.values(columns).map((column) => (
           <Column
             key={column.id}

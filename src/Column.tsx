@@ -1,8 +1,8 @@
 import { useDroppable } from "@dnd-kit/core";
 import type { PropsWithChildren } from "react";
 import { Card } from "./Card";
-import { List, type RowComponentProps } from "react-window";
 import { useEffect } from "react";
+import { Virtuoso } from "react-virtuoso";
 
 export interface Column extends PropsWithChildren {
   id: string;
@@ -44,33 +44,17 @@ export const Column = ({
         }`}
         ref={setNodeRef}
       >
-        <List
-          rowHeight={50}
-          rowCount={cardIds.length}
-          rowComponent={RowComponent}
-          rowProps={{ cards, cardIds, onDelete }}
+        <Virtuoso
+          totalCount={cardIds.length}
+          itemContent={(index) => (
+            <Card
+              id={cardIds[index]}
+              title={cards[cardIds[index]].title}
+              onDelete={onDelete}
+            />
+          )}
         />
       </div>
     </div>
   );
 };
-
-function RowComponent({
-  index,
-  cards,
-  cardIds,
-  onDelete,
-}: RowComponentProps<{
-  cards: Record<string, Card>;
-  cardIds: string[];
-  onDelete: (cardId: string) => void;
-}>) {
-  const filtered = cardIds.map((id) => cards[id]);
-  return (
-    <Card
-      id={cardIds[index]}
-      title={filtered[index].title}
-      onDelete={onDelete}
-    />
-  );
-}
