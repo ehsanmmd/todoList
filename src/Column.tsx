@@ -1,12 +1,16 @@
 import { useDroppable } from "@dnd-kit/core";
 import type { PropsWithChildren } from "react";
+import { Card } from "./Card";
+import { List, type RowComponentProps } from "react-window";
 
 export interface Column extends PropsWithChildren {
   id: string;
   title: string;
+  cardIds: string[];
+  cards: Record<string, Card>;
 }
 
-export const Column = ({ title, children, id }: Column) => {
+export const Column = ({ title, id, cardIds, cards }: Column) => {
   const { isOver, setNodeRef } = useDroppable({ id });
 
   return (
@@ -15,13 +19,27 @@ export const Column = ({ title, children, id }: Column) => {
         {title}
       </div>
       <div
-        className={`w-50 border border-dashed border-amber-600 rounded-xl py-1 h-[calc(100vh-100px)] overflow-y-auto ${
+        className={`w-50 border border-dashed border-amber-600 rounded-xl py-1 h-[calc(100vh-100px)]  ${
           isOver ? "bg-green-100" : undefined
         }`}
         ref={setNodeRef}
       >
-        {children}
+        <List
+          rowHeight={50}
+          rowCount={cardIds.length}
+          rowComponent={RowComponent}
+          rowProps={{ cards, cardIds }}
+        />
       </div>
     </div>
   );
 };
+
+function RowComponent({
+  index,
+  cards,
+  cardIds,
+}: RowComponentProps<{ cards: Record<string, Card>; cardIds: string[] }>) {
+  const filtered = cardIds.map((id) => cards[id]);
+  return <Card id={cardIds[index]} title={filtered[index].title} />;
+}
