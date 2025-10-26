@@ -10,20 +10,27 @@ import {
 } from "@dnd-kit/core";
 import Card from "./Card";
 import { Column } from "./Column";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useBoardStore, type Card as CardType } from "./store/useBoardStore";
 
 export const Board = () => {
   const [activeCard, setActiveCard] = useState<CardType | null>(null);
   const [sourceColumn, setSourceColumn] = useState<string | null>(null);
+  const [localSearchTerm, setLocalSearchTerm] = useState("");
+  const [isTyping, setIsTyping] = useState(false);
 
-  const {
-    cards,
-    columns,
-    searchTerm,
-    setSearchTerm,
-    moveCard,
-  } = useBoardStore();
+  const { cards, columns, searchTerm, setSearchTerm, moveCard } =
+    useBoardStore();
+
+  useEffect(() => {
+    setIsTyping(true);
+    const timer = setTimeout(() => {
+      setSearchTerm(localSearchTerm);
+      setIsTyping(false);
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [localSearchTerm, setSearchTerm]);
 
   const sensors = useSensors(
     useSensor(MouseSensor, {
@@ -40,7 +47,6 @@ export const Board = () => {
   );
 
   function handleDragStart(event: DragStartEvent) {
-    console.log(event);
     const { active } = event;
     if (active.data.current) {
       setActiveCard(active.data.current as CardType);
@@ -63,7 +69,7 @@ export const Board = () => {
   };
 
   const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchTerm(event.target.value);
+    setLocalSearchTerm(event.target.value);
   };
 
   const filteredCards =
@@ -92,14 +98,19 @@ export const Board = () => {
 
   return (
     <div className="h-screen w-screen flex flex-col items-center gap-4 p-4">
-      <div>
+      <div className="relative">
         <input
           type="text"
           placeholder="Search..."
-          className="border border-gray-300 rounded-md p-2"
-          value={searchTerm}
+          className="border border-gray-300 rounded-md p-2 pr-10"
+          value={localSearchTerm}
           onChange={handleSearch}
         />
+        {isTyping && (
+          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">
+            loading...
+          </span>
+        )}
       </div>
       <div className="flex gap-2">
         <DndContext
