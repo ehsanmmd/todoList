@@ -168,6 +168,28 @@ export const Board = () => {
     });
   };
 
+  const handleCardCreate = (
+    columnId: string,
+    title: string,
+    description?: string
+  ) => {
+    const newId = `card-${Date.now()}`;
+    const newCard: Card = { id: newId, title, description };
+
+    setCards((prev) => ({
+      [newId]: newCard,
+      ...prev,
+    }));
+
+    setColumns((prev) => ({
+      ...prev,
+      [columnId]: {
+        ...prev[columnId],
+        cardIds: [newId, ...prev[columnId].cardIds],
+      },
+    }));
+  };
+
   return (
     <div className="h-screen w-screen flex flex-col items-center gap-4 p-4">
       <div>
@@ -195,12 +217,17 @@ export const Board = () => {
               onStartDrag={onStartDrag}
               onDelete={handleCardDelete}
               onUpdate={handleCardUpdate}
+              onCreateCard={handleCardCreate}
             />
           ))}
 
           <DragOverlay>
             {activeCard ? (
-              <Card id={activeCard.id} title={activeCard.title} description={activeCard.description} />
+              <Card
+                id={activeCard.id}
+                title={activeCard.title}
+                description={activeCard.description}
+              />
             ) : null}
           </DragOverlay>
         </DndContext>
