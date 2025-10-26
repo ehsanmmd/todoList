@@ -8,10 +8,19 @@ export interface Column extends PropsWithChildren {
   title: string;
   cardIds: string[];
   cards: Record<string, Card>;
+  onStartDrag: (id: string) => void;
 }
 
-export const Column = ({ title, id, cardIds, cards }: Column) => {
-  const { isOver, setNodeRef } = useDroppable({ id });
+export const Column = ({ title, id, cardIds, cards, onStartDrag }: Column) => {
+  const { isOver, setNodeRef, active } = useDroppable({ id });
+
+  const isInitialPosition = !!active && cardIds.includes(active.id.toString());
+  const isOverNewColumn = isOver && !isInitialPosition;
+  const isOverSourceColumn = isOver && isInitialPosition;
+
+  if (isOverSourceColumn) {
+    onStartDrag(id);
+  }
 
   return (
     <div>
@@ -20,7 +29,7 @@ export const Column = ({ title, id, cardIds, cards }: Column) => {
       </div>
       <div
         className={`w-50 border border-dashed border-amber-600 rounded-xl py-1 h-[calc(100vh-100px)]  ${
-          isOver ? "bg-green-100" : undefined
+          isOverNewColumn ? "bg-green-100" : undefined
         }`}
         ref={setNodeRef}
       >
