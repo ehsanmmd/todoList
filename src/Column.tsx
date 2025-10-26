@@ -1,18 +1,16 @@
 import { useDroppable } from "@dnd-kit/core";
 import type { PropsWithChildren } from "react";
-import { Card } from "./Card";
+import Card from "./Card";
 import { useEffect, useState } from "react";
 import { Virtuoso } from "react-virtuoso";
+import { useBoardStore, type Card as CardType } from "./store/useBoardStore";
 
 export interface Column extends PropsWithChildren {
   id: string;
   title: string;
   cardIds: string[];
-  cards: Record<string, Card>;
+  cards: Record<string, CardType>;
   onStartDrag: (id: string) => void;
-  onDelete: (cardId: string) => void;
-  onUpdate: (cardId: string, description: string) => void;
-  onCreateCard: (columnId: string, title: string, description?: string) => void;
 }
 
 export const Column = ({
@@ -21,13 +19,12 @@ export const Column = ({
   cardIds,
   cards,
   onStartDrag,
-  onDelete,
-  onUpdate,
-  onCreateCard,
 }: Column) => {
   const { isOver, setNodeRef, active } = useDroppable({ id });
   const [isCreating, setIsCreating] = useState(false);
   const [newCardTitle, setNewCardTitle] = useState("");
+
+  const {createCard, updateCard, deleteCard} = useBoardStore();
 
   const isInitialPosition = !!active && cardIds.includes(active.id.toString());
   const isOverNewColumn = isOver && !isInitialPosition;
@@ -41,7 +38,7 @@ export const Column = ({
 
   const handleCreate = () => {
     if (newCardTitle.trim()) {
-      onCreateCard(id, newCardTitle.trim());
+      createCard(id, newCardTitle.trim());
       setNewCardTitle("");
     }
     setIsCreating(false);
@@ -94,8 +91,8 @@ export const Column = ({
                 id={cardIds[index]}
                 title={cards[cardIds[index]].title}
                 description={cards[cardIds[index]].description}
-                onDelete={onDelete}
-                onUpdate={onUpdate}
+                onDelete={deleteCard}
+                onUpdate={updateCard}
               />
             )}
           />

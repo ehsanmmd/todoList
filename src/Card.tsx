@@ -1,16 +1,14 @@
 import { useDraggable } from "@dnd-kit/core";
-import { useState } from "react";
+import React, { useState } from "react";
 import { AiOutlineDelete, AiOutlineEdit } from "react-icons/ai";
+import type { Card as CardType } from "./store/useBoardStore";
 
-export interface Card {
-  id: string;
-  title: string;
-  description?: string;
+interface CardProps extends CardType {
   onDelete?: (id: string) => void;
   onUpdate?: (id: string, description: string) => void;
 }
 
-export const Card = ({ title, id, description, onDelete, onUpdate }: Card) => {
+const Card = ({ title, id, description, onDelete, onUpdate }: CardProps) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editedDescription, setEditedDescription] = useState(description);
 
@@ -83,3 +81,5 @@ export const Card = ({ title, id, description, onDelete, onUpdate }: Card) => {
     </div>
   );
 };
+
+export default React.memo(Card);

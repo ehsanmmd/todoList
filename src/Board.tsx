@@ -8,59 +8,22 @@ import {
   type DragEndEvent,
   type DragStartEvent,
 } from "@dnd-kit/core";
-import { Card } from "./Card";
+import Card from "./Card";
 import { Column } from "./Column";
 import { useState } from "react";
-import { faker } from "@faker-js/faker";
-
-function generateInitialState(cardCount: number) {
-  const cards: Record<string, Card> = {};
-  const todoCardIds: string[] = [];
-
-  for (let i = 1; i <= cardCount; i++) {
-    const id = `card-${i}`;
-    const description = faker.lorem.words(5);
-    cards[id] = { id, title: `Task ${i}`, description };
-    todoCardIds.push(id);
-  }
-
-  const columns: Record<
-    string,
-    {
-      id: string;
-      title: string;
-      cardIds: string[];
-    }
-  > = {
-    todo: {
-      id: "todo",
-      title: "Todo",
-      cardIds: todoCardIds,
-    },
-    inProgress: {
-      id: "inProgress",
-      title: "InProgress",
-      cardIds: [],
-    },
-    done: {
-      id: "done",
-      title: "Done",
-      cardIds: [],
-    },
-  };
-
-  return { cards, columns };
-}
-
-const { cards: initialCards, columns: initialColumns } =
-  generateInitialState(5000);
+import { useBoardStore, type Card as CardType } from "./store/useBoardStore";
 
 export const Board = () => {
-  const [activeCard, setActiveCard] = useState<Card | null>(null);
-  const [columns, setColumns] = useState(initialColumns);
-  const [cards, setCards] = useState(initialCards);
+  const [activeCard, setActiveCard] = useState<CardType | null>(null);
   const [sourceColumn, setSourceColumn] = useState<string | null>(null);
-  const [searchTerm, setSearchTerm] = useState("");
+
+  const {
+    cards,
+    columns,
+    searchTerm,
+    setSearchTerm,
+    moveCard,
+  } = useBoardStore();
 
   const sensors = useSensors(
     useSensor(MouseSensor, {
@@ -80,7 +43,7 @@ export const Board = () => {
     console.log(event);
     const { active } = event;
     if (active.data.current) {
-      setActiveCard(active.data.current as Card);
+      setActiveCard(active.data.current as CardType);
     }
   }
 
@@ -91,45 +54,12 @@ export const Board = () => {
     if (!over || !sourceColumn || over.id === sourceColumn) return;
 
     const activeId = active.id.toString();
-    const targetColumnId = over.id.toString();
-
-    setColumns((prev) => ({
-      ...prev,
-      [sourceColumn]: {
-        ...prev[sourceColumn],
-        cardIds: prev[sourceColumn].cardIds.filter((id) => id !== activeId),
-      },
-      [targetColumnId]: {
-        ...prev[targetColumnId],
-        cardIds: [...prev[targetColumnId].cardIds, activeId],
-      },
-    }));
+    moveCard(activeId, sourceColumn, over.id.toString());
     setSourceColumn(null);
   }
 
   const onStartDrag = (columnId: string) => {
     setSourceColumn(columnId);
-  };
-
-  const handleCardDelete = (id: string) => {
-    setCards((prev) => {
-      const newCards = { ...prev };
-      delete newCards[id];
-      return newCards;
-    });
-
-    setColumns((prev) => {
-      const newColumns = { ...prev };
-      Object.keys(newColumns).forEach((columnKey) => {
-        newColumns[columnKey] = {
-          ...newColumns[columnKey],
-          cardIds: newColumns[columnKey].cardIds.filter(
-            (cardId) => cardId !== id
-          ),
-        };
-      });
-      return newColumns;
-    });
   };
 
   const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -160,36 +90,6 @@ export const Board = () => {
         )
       : columns;
 
-  const handleCardUpdate = (cardId: string, description: string) => {
-    setCards((prev) => {
-      const newCards = { ...prev };
-      newCards[cardId].description = description;
-      return newCards;
-    });
-  };
-
-  const handleCardCreate = (
-    columnId: string,
-    title: string,
-    description?: string
-  ) => {
-    const newId = `card-${Date.now()}`;
-    const newCard: Card = { id: newId, title, description };
-
-    setCards((prev) => ({
-      [newId]: newCard,
-      ...prev,
-    }));
-
-    setColumns((prev) => ({
-      ...prev,
-      [columnId]: {
-        ...prev[columnId],
-        cardIds: [newId, ...prev[columnId].cardIds],
-      },
-    }));
-  };
-
   return (
     <div className="h-screen w-screen flex flex-col items-center gap-4 p-4">
       <div>
@@ -215,9 +115,6 @@ export const Board = () => {
               cardIds={column.cardIds}
               cards={filteredCards}
               onStartDrag={onStartDrag}
-              onDelete={handleCardDelete}
-              onUpdate={handleCardUpdate}
-              onCreateCard={handleCardCreate}
             />
           ))}
 
